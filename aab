@@ -1,0 +1,148 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+use Getopt::Long;
+
+use PVE::AAB;
+
+$ENV{'LC_ALL'} = 'C';
+
+sub print_usage {
+    my ($msg) = @_;
+
+    if ($msg) {
+	print STDERR "ERROR: $msg\n";
+    }
+    print STDERR "aab <command> [parameters]\n";
+}
+
+$SIG{INT} = $SIG{TERM} = $SIG{QUIT} = $SIG{HUP} = sub {
+    die "interrupted by signal\n";
+};
+
+my $aab = PVE::AAB->new();
+
+$aab->writelog("aab: " . join(' ', @ARGV) . "\n");
+
+my $cmd = shift @ARGV;
+if (!$cmd) {
+    print_usage('missing command');
+    exit -1;
+}
+
+eval {
+    if ($cmd eq 'init') {
+
+	die "command '$cmd' expects no arguments.\n" if scalar (@ARGV) != 0;
+	$aab->initialize();
+
+    } elsif ($cmd eq 'bootstrap') {
+
+	my ($datadir, $keep);
+	if (!GetOptions('datadir=s' => \$datadir,
+	                'keep' => \$keep)) {
+	    print_usage();
+	    exit -1;
+	}
+
+	my $here = "$aab->{working_dir}/scripts/init.bash";
+	if (!$datadir && -f $here) {
+	    print "Using current working directory as data directory\n";
+	    $datadir = $aab->{working_dir};
+	}
+
+	PVE::AAB::setup_defaults($datadir) if $datadir;
+	$aab->ve_init() if !$keep;
+	$aab->bootstrap();
+
+    } elsif ($cmd eq 'basedir') {
+
+	die "command '$cmd' expects no arguments.\n" if scalar (@ARGV) != 0;
+	print $aab->{rootfs} . "\n";
+
+    } elsif ($cmd eq 'veid') {
+
+	die "command '$cmd' expects no arguments.\n" if scalar (@ARGV) != 0;
+	print $aab->{veid} . "\n";
+
+    } elsif ($cmd eq 'packagefile') {
+
+	die "command '$cmd' expects no arguments.\n" if scalar (@ARGV) != 0;
+
+	print "$aab->{targetname}.tar.gz\n";
+
+    } elsif ($cmd eq 'finalize') {
+
+	$aab->finalize();
+
+    } elsif ($cmd eq 'install') {
+
+	my $required;
+	foreach my $arg (@ARGV) {
+	    if ($arg =~ m/\.pkglist$/) {
+		open my $fh, $arg or
+		    die "cant open package list '$arg' - $!";
+		while (defined (my $line = <$fh>)) {
+		    chomp $line;
+		    next if $line =~ m/^\s*$/;
+		    next if $line =~ m/\#/;
+		    if ($line =~ m/^\s*(\S+)\s*$/) {
+			push @$required, $1;
+		    } else {
+			die "invalid package name in '$arg' - $line\n";
+		    }
+		}
+		close ($fh);
+	    } else {
+		push @$required, $arg;
+	    }
+	}
+
+	$aab->install ($required);
+
+    } elsif ($cmd eq 'exec') {
+
+	$aab->ve_exec (@ARGV);
+
+    } elsif ($cmd eq 'enter') {
+
+	$aab->enter();
+
+    } elsif ($cmd eq 'clean') {
+
+	$aab->clean();
+
+    } elsif ($cmd eq 'dist-clean') {
+
+	$aab->clean(1);
+
+    } elsif ($cmd eq 'list') {
+
+	my $verbose;
+
+	if (!GetOptions ('verbose' =>\$verbose)) {
+	    print_usage ();
+	    exit (-1);
+	}
+
+	die "command '$cmd' expects no arguments.\n" if scalar (@ARGV) != 0;
+
+	my $query = '-Q';
+	$query .= 'q' if !$verbose;
+	print $aab->run_command(['chroot', $aab->{rootfs}, 'pacman', $query], undef, 1);
+
+    } else {
+
+	print_usage("invalid command '$cmd'");
+	exit (-1);
+
+    }
+};
+
+if (my $err = $@) {
+    $aab->logmsg($err);
+    die $err;
+}
+
+exit 0;

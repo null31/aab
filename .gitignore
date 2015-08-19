@@ -1,0 +1,9 @@
+rootfs
+config
+logfile
+PVE
+.veid
+pacman.conf
+pkgcache
+rootfs
+aab.conf
