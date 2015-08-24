@@ -1,0 +1,27 @@
+Usage example:
+
+1) Create an aab.conf file describing your template.
+
+--- Example aab.conf:
+Name: base
+Version: 2015-08-21-1
+Section: optional
+Maintainer: Your Name
+Headline: ArchLinux base image.
+Architecture: x86_64
+Source: http://archlinux.cu.be/$repo/os/$arch
+--- End of example
+
+2) Run as root:
+
+  # ./aab init
+  # ./aab bootstrap
+
+3) Maybe install additional packages
+
+  # ./aab install base-devel
+
+4) Create the archive and clean up:
+
+  # ./aab finalize
+  # ./aab cleanup
