@@ -432,6 +432,7 @@ sub pacman_command {
     my $root = $self->{rootfs};
     return ('/usr/bin/pacman',
             '--root', $root,
+            '--config', $self->{'pacman.conf'},
             '--cachedir', $self->{pkgcache},
             '--noconfirm');
 }
