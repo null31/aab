@@ -248,9 +248,11 @@ $servers
 $servers
 [community]
 $servers
-[multilib]
-$servers
 EOF
+
+    if ($config->{architecture} eq 'x86_64') {
+	print $fh "[multilib]\n$servers\n";
+    }
 
     mkdir $self->{rootfs} || die "unable to create rootfs - $!";
 
