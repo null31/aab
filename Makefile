@@ -16,7 +16,7 @@ default: base-x86_64
 # we should always regenerate this:
 .PHONY: aab.conf aab.conf.x86_64 aab.conf.i686
 aab.conf:
-	echo 'Name: base' > aab.conf
+	echo 'Name: archlinux-base' > aab.conf
 	echo 'Version: $(VERSION)' >> aab.conf
 	echo 'Section: optional' >> aab.conf
 	echo 'Maintainer: Proxmox Support Team <support@proxmox.com>' >> aab.conf
