@@ -554,6 +554,7 @@ sub write_config {
     $data .= "Section: $config->{section}\n";
     $data .= "Maintainer: $config->{maintainer}\n";
     $data .= "Architecture: $config->{architecture}\n";
+    $data .= "Infopage: https://www.archlinux.org\n";
     $data .= "Installed-Size: $size\n";
 
     # optional
