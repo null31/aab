@@ -18,7 +18,7 @@ default: base-x86_64
 aab.conf:
 	echo 'Name: archlinux-base' > aab.conf
 	echo 'Version: $(VERSION)' >> aab.conf
-	echo 'Section: optional' >> aab.conf
+	echo 'Section: system' >> aab.conf
 	echo 'Maintainer: Proxmox Support Team <support@proxmox.com>' >> aab.conf
 	echo 'Source: http://archlinux.cu.be/$$repo/os/$$arch' >> aab.conf
 
