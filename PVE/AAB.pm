@@ -616,6 +616,9 @@ sub finalize {
     unlink $file;
     rename_file($file.'.aab_orig', $file);
 
+    print "Removing weak temporary pacman keyring...\n";
+    rmtree("$rootdir/etc/pacman.d/gnupg");
+
     my $sizestr = $self->run_command("du -sm $rootdir", undef, 1);
     my $size;
     if ($sizestr =~ m/^(\d+)\s+\Q$rootdir\E$/) {
