@@ -56,6 +56,12 @@ eval {
 	$aab->ve_init() if !$keep;
 	$aab->bootstrap();
 
+    } elsif ($cmd eq 'keyring') {
+	# for debugging:
+
+	die "command '$cmd' expects no arguments.\n" if scalar (@ARGV) != 0;
+	$aab->populate_keyring();
+
     } elsif ($cmd eq 'basedir') {
 
 	die "command '$cmd' expects no arguments.\n" if scalar (@ARGV) != 0;

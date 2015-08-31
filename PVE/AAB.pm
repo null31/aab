@@ -521,16 +521,51 @@ sub bootstrap {
     }
 
     print "Populating keyring...\n";
-    $self->run_command(['mount', '-t', 'devtmpfs', '-o', 'mode=0755,nosuid', 'udev', "$root/dev"]);
-    $self->run_command(['unshare', '--fork', '--pid', 'chroot', "$root", 'pacman-key', '--init']);
-    $self->run_command(['unshare', '--fork', '--pid', 'chroot', "$root", 'pacman-key', '--populate']);
-    $self->run_command(['umount', "$root/dev"]);
+    $self->populate_keyring();
 
     print "Starting container...\n";
     $self->start_container();
 
     print "Installing packages...\n";
     $self->ve_command(['pacman', '-S', '--needed', '--noconfirm', '--', @$packages]);
+}
+
+sub populate_keyring {
+    my ($self) = @_;
+    my $root = $self->{rootfs};
+
+    # devices needed for gnupg to function:
+    my $devs = {
+	'/dev/null'    => ['c', '1', '3'],
+	'/dev/random'  => ['c', '1', '9'], # fake /dev/random (really urandom)
+	'/dev/urandom' => ['c', '1', '9'],
+	'/dev/tty'     => ['c', '5', '0'],
+    };
+
+    my $cleanup_dev = sub {
+	# remove temporary device files
+	unlink "${root}$_" foreach keys %$devs;
+    };
+    local $SIG{INT} = $SIG{TERM} = $cleanup_dev;
+
+    # at least /dev/null exists as regular file after installing the filesystem package,
+    # and we want to replace /dev/random, so delete devices first
+    &$cleanup_dev();
+
+    foreach my $dev (keys %$devs) {
+	my ($type, $major, $minor) = @{$devs->{$dev}};
+	system('mknod', "${root}${dev}", $type, $major, $minor);
+    }
+
+    # generate weak master key and populate the keyring
+    system('unshare', '--fork', '--pid', 'chroot', "$root", 'pacman-key', '--init') == 0
+	or die "failed to initialize keyring: $?";
+    system('unshare', '--fork', '--pid', 'chroot', "$root", 'pacman-key', '--populate') == 0
+	or die "failed to populate keyring: $?";
+
+    &$cleanup_dev();
+    # reset to original state
+    system('touch', "$root/dev/null");
 }
 
 sub install {
