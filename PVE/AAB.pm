@@ -306,12 +306,13 @@ sub ve_init {
 
 
     my $veid = $self->{veid};
+    my $conffile = $self->{veconffile};
 
     $self->logmsg ("initialize VE $veid\n");
 
     my $vestat = $self->ve_status();
     if ($vestat->{running}) {
-	$self->run_command ("lxc-stop -n $veid --kill");
+	$self->run_command ("lxc-stop -n $veid --rcfile $conffile --kill");
     } 
 
     rmtree $self->{rootfs};
@@ -322,12 +323,13 @@ sub ve_command {
     my ($self, $cmd, $input) = @_;
 
     my $veid = $self->{veid};
+    my $conffile = $self->{veconffile};
 
     if (ref ($cmd) eq 'ARRAY') {
-	unshift @$cmd, 'lxc-attach', '-n', $veid, '--clear-env', '--';
+	unshift @$cmd, 'lxc-attach', '-n', $veid, '--rcfile', $conffile,'--clear-env', '--';
 	$self->run_command ($cmd, $input);
     } else {
-	$self->run_command ("lxc-attach -n $veid --clear-env -- $cmd", $input);
+	$self->run_command ("lxc-attach -n $veid --rcfile $conffile --clear-env -- $cmd", $input);
     }
 }
 
@@ -335,9 +337,10 @@ sub ve_exec {
     my ($self, @cmd) = @_;
 
     my $veid = $self->{veid};
+    my $conffile = $self->{veconffile};
 
     my $reader;
-    my $pid = open2($reader, "<&STDIN", 'lxc-attach', '-n', $veid,  '--', @cmd)
+    my $pid = open2($reader, "<&STDIN", 'lxc-attach', '-n', $veid, '--rcfile', $conffile, '--', @cmd)
 	or die "unable to exec command";
 
     while (defined (my $line = <$reader>)) {
@@ -426,7 +429,8 @@ sub start_container {
 sub stop_container {
     my ($self) = @_;
     my $veid = $self->{veid};
-    $self->run_command ("lxc-stop -n $veid --kill");
+    my $conffile = $self->{veconffile};
+    $self->run_command ("lxc-stop -n $veid --rcfile $conffile --kill");
 }
 
 sub pacman_command {
@@ -644,6 +648,7 @@ sub finalize {
 sub enter {
     my ($self) = @_;
     my $veid = $self->{veid};
+    my $conffile = $self->{veconffile};
 
     my $vestat = $self->ve_status();
     if (!$vestat->{exist}) {
@@ -655,7 +660,7 @@ sub enter {
 	$self->start_container();
     }
 
-    system ("lxc-attach -n $veid --clear-env");
+    system ("lxc-attach -n $veid --rcfile $conffile --clear-env");
 }
 
 sub clean {
