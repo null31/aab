@@ -1,4 +1,4 @@
-TODAY != date '+%Y-%M-%d'
+TODAY != date '+%Y%M%d'
 
 VERSION := $(TODAY)-1
 V_x86_64 := $(VERSION)_x86_64
