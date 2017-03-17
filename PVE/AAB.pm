@@ -117,6 +117,8 @@ sub read_config {
 
     die "unable to parse config file" if $rec;
 
+    $res->{architecture} = 'amd64' if $res->{architecture} eq 'x86_64';
+
     return $res;
 }
 
@@ -236,10 +238,12 @@ sub initialize {
 
     $fh = IO::File->new($self->{'pacman.conf'}, O_WRONLY|O_CREAT|O_EXCL) ||
 	die "unable to write pacman config file $self->{'pacman.conf'} - $!";
+    my $arch = $config->{architecture};
+    $arch = 'x86_64' if $arch eq 'amd64';
     print $fh <<"EOF";
 [options]
 HoldPkg = pacman glibc
-Architecture = $config->{architecture}
+Architecture = $arch
 CheckSpace
 SigLevel = Never
 
