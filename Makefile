@@ -4,6 +4,8 @@ VERSION := $(TODAY)-1
 V_x86_64 := $(VERSION)_x86_64
 V_i686   := $(VERSION)_i686
 
+PERL := perl -I.
+
 all:
 	@echo The following targets are available:
 	@echo '  $(MAKE) base-x86_64'
@@ -41,10 +43,10 @@ archlinux-base_$(V_i686).tar.gz: aab.conf.i686
 
 .PHONY: build-current
 build-current: check-all
-	./aab init
-	./aab bootstrap
-	./aab finalize
-	./aab clean
+	$(PERL) ./aab init
+	$(PERL) ./aab bootstrap
+	$(PERL) ./aab finalize
+	$(PERL) ./aab clean
 
 .PHONY: check-pacman
 check-pacman:
@@ -59,8 +61,8 @@ check-all: check-pacman check-root
 
 .PHONY: clean
 clean:
-	@./aab clean
+	@$(PERL) ./aab clean
 
 .PHONY: distclean
 distclean:
-	@./aab dist-clean
+	@$(PERL) ./aab dist-clean
