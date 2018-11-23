@@ -101,7 +101,7 @@ sub read_config {
 	    my $long = $2;
 	    $long =~ s/^\s+/ /;
 	    $res->{description} = $long;
-	    chomp $res->{description};	    
+	    chomp $res->{description};
 	} elsif ($rec =~ s/^([^:]+):\s*(.*\S)\s*\n//) {
 	    my ($key, $value) = (lc ($1), $2);
 	    if ($key eq 'source' || $key eq 'mirror') {
@@ -133,7 +133,7 @@ sub new {
     die "no 'maintainer' specified\n" if !$config->{maintainer};
 
     my $name = $config->{name} || die "no 'name' specified\n";
-    $name =~ m/^[a-z][0-9a-z\-\*\.]+$/ || 
+    $name =~ m/^[a-z][0-9a-z\-\*\.]+$/ ||
 	die "illegal characters in name '$name'\n";
 
     my $targetname;
@@ -288,7 +288,7 @@ sub ve_status {
 	}
     }
     close($fh);
-    
+
     return $res;
 }
 
@@ -318,7 +318,7 @@ sub ve_init {
     my $vestat = $self->ve_status();
     if ($vestat->{running}) {
 	$self->run_command ("lxc-stop -n $veid --rcfile $conffile --kill");
-    } 
+    }
 
     rmtree $self->{rootfs};
     mkpath $self->{rootfs};
@@ -383,8 +383,8 @@ sub run_command {
     # catch exec errors
     if ($orig_pid != $$) {
 	$self->logmsg ("ERROR: command '$cmdstr' failed - fork failed\n");
-	POSIX::_exit (1); 
-	kill ('KILL', $$); 
+	POSIX::_exit (1);
+	kill ('KILL', $$);
     }
 
     die $err if $err;
@@ -466,7 +466,7 @@ sub bootstrap {
     mkpath $self->{pkgcache};
     mkpath $self->{pkgdir};
     mkpath "$root/var/lib/pacman";
-    $self->run_command([@pacman, '-Sy']);
+    $self->run_command([@pacman, '-Syy']);
 
     print "Figuring out what to install...\n";
     my $incl = { map { $_ => 1 } @{$self->{incl}} };
