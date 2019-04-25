@@ -260,8 +260,6 @@ EOF
 	print $fh "[multilib]\n$servers\n";
     }
 
-    mkdir $self->{rootfs} || die "unable to create rootfs - $!";
-
     $self->logmsg("configured VE $self->{veid}\n");
 }
 
