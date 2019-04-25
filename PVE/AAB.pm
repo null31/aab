@@ -320,7 +320,7 @@ sub ve_init {
     }
 
     rmtree $self->{rootfs};
-    mkpath $self->{rootfs};
+    mkpath "$self->{rootfs}/dev";
 }
 
 sub ve_command {
@@ -516,6 +516,9 @@ sub bootstrap {
     $self->cache_packages($packages);
     #$self->copy_packages();
 
+    print "Creating device nodes for package manager...\n";
+    $self->create_dev();
+
     print "Installing package manager and essentials...\n";
     # inetutils for 'hostname' for our init
     $self->run_command([@pacman, '-S', 'pacman', 'inetutils', 'archlinux-keyring']);
@@ -531,6 +534,9 @@ sub bootstrap {
     print "Populating keyring...\n";
     $self->populate_keyring();
 
+    print "Removing device nodes...\n";
+    $self->cleanup_dev();
+
     print "Starting container...\n";
     $self->start_container();
 
@@ -538,32 +544,40 @@ sub bootstrap {
     $self->ve_command(['pacman', '-S', '--needed', '--noconfirm', '--', @$packages]);
 }
 
-sub populate_keyring {
+# devices needed for gnupg to function:
+my $devs = {
+    '/dev/null'    => ['c', '1', '3'],
+    '/dev/random'  => ['c', '1', '9'], # fake /dev/random (really urandom)
+    '/dev/urandom' => ['c', '1', '9'],
+    '/dev/tty'     => ['c', '5', '0'],
+};
+
+sub cleanup_dev {
     my ($self) = @_;
     my $root = $self->{rootfs};
 
-    # devices needed for gnupg to function:
-    my $devs = {
-	'/dev/null'    => ['c', '1', '3'],
-	'/dev/random'  => ['c', '1', '9'], # fake /dev/random (really urandom)
-	'/dev/urandom' => ['c', '1', '9'],
-	'/dev/tty'     => ['c', '5', '0'],
-    };
+    # remove temporary device files
+    unlink "${root}$_" foreach keys %$devs;
+}
 
-    my $cleanup_dev = sub {
-	# remove temporary device files
-	unlink "${root}$_" foreach keys %$devs;
-    };
-    local $SIG{INT} = $SIG{TERM} = $cleanup_dev;
+sub create_dev {
+    my ($self) = @_;
+    my $root = $self->{rootfs};
 
-    # at least /dev/null exists as regular file after installing the filesystem package,
-    # and we want to replace /dev/random, so delete devices first
-    &$cleanup_dev();
+    local $SIG{INT} = $SIG{TERM} = sub { $self->cleanup_dev; };
+
+    # we want to replace /dev/random, so delete devices first
+    $self->cleanup_dev();
 
     foreach my $dev (keys %$devs) {
 	my ($type, $major, $minor) = @{$devs->{$dev}};
 	system('mknod', "${root}${dev}", $type, $major, $minor);
     }
+}
+
+sub populate_keyring {
+    my ($self) = @_;
+    my $root = $self->{rootfs};
 
     # generate weak master key and populate the keyring
     system('unshare', '--fork', '--pid', 'chroot', "$root", 'pacman-key', '--init') == 0
@@ -571,9 +585,6 @@ sub populate_keyring {
     system('unshare', '--fork', '--pid', 'chroot', "$root", 'pacman-key', '--populate') == 0
 	or die "failed to populate keyring: $?";
 
-    &$cleanup_dev();
-    # reset to original state
-    system('touch', "$root/dev/null");
 }
 
 sub install {
