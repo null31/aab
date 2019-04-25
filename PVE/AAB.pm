@@ -16,6 +16,7 @@ my @BASE_PACKAGES = qw(base openssh);
 my @BASE_EXCLUDES = qw(e2fsprogs
                        jfsutils
                        linux
+                       linux-firmware
                        lvm2
                        mdadm
                        netctl
