@@ -675,6 +675,8 @@ sub clean {
     unlink $self->{'pacman.conf'};
     $self->ve_destroy();
     unlink '.veid';
+    unlink $self->{veconffile};
+
     rmtree $self->{pkgcache} if $all;
 }
 
