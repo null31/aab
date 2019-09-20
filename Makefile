@@ -18,7 +18,7 @@ aab.conf:
 	echo 'Maintainer: Proxmox Support Team <support@proxmox.com>' >> aab.conf
 	echo 'Source: http://archlinux.cu.be/$$repo/os/$$arch' >> aab.conf
 	echo 'Architecture: $(ARCH)' >> aab.conf
-	echo 'Headline: ArchLinux base image.' >> aab.conf
+	echo "Description: ArchLinux base image.\n  ArchLinux template with the 'base' group and the 'openssh' package installed." >> aab.conf
 
 .PHONY: base-$(ARCH)
 base-$(ARCH): aab.conf archlinux-base_$(V_ARCH).tar.gz
