@@ -8,13 +8,39 @@ use PVE::AAB;
 
 $ENV{'LC_ALL'} = 'C';
 
+my $cmds = {
+    basedir => 'Print rootfs path of CT appliance currently build',
+    bootstrap => 'Bootstrap the base system',
+    clean => '',
+    'dist-clean' => '',
+    enter => 'Enter container with shell',
+    exec => 'Execute command in container context',
+    finalize => 'Build final appliance archive',
+    help => 'This message',
+    init => 'Initial checks and pacman config generation',
+    install => 'Install specified package(s) and its dependencies',
+    keyring => 'Populate pacman keyring in CT',
+    list => 'List installed packages',
+    packagefile => 'Get name of resulting appliance archive',
+    veid => 'Print current VE-ID',
+};
+
 sub print_usage {
     my ($msg) = @_;
 
     if ($msg) {
 	print STDERR "ERROR: $msg\n";
     }
-    print STDERR "aab <command> [parameters]\n";
+    print STDERR "$0 <command> [parameters]\n\n";
+
+    for my $cmd (sort keys %$cmds) {
+	if (my $desc = $cmds->{$cmd}) {
+	    my $tabs = length($cmd) > 7 ? "\t" : "\t\t";
+	    print STDERR "\t$cmd$tabs-- $desc\n";
+	} else {
+	    print STDERR "\t$cmd\n";
+	}
+    }
 }
 
 $SIG{INT} = $SIG{TERM} = $SIG{QUIT} = $SIG{HUP} = sub {
@@ -32,7 +58,9 @@ if (!$cmd) {
 }
 
 eval {
-    if ($cmd eq 'init') {
+    if ($cmd eq 'help') {
+	print_usage();
+    } elsif ($cmd eq 'init') {
 
 	die "command '$cmd' expects no arguments.\n" if scalar (@ARGV) != 0;
 	$aab->initialize();
