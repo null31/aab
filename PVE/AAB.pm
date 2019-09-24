@@ -645,7 +645,7 @@ sub finalize {
     } else {
 	die "unable to detect size\n";
     }
-    $self->logmsg ("$size MB\n");
+    $self->logmsg ("uncompressed size: $size MB\n");
 
     $self->write_config ("$rootdir/etc/appliance.info", $size);
 
@@ -657,7 +657,12 @@ sub finalize {
 
     $self->run_command ("tar cpf $target --numeric-owner -C '$rootdir' ./etc/appliance.info");
     $self->run_command ("tar rpf $target --numeric-owner -C '$rootdir' --exclude ./etc/appliance.info .");
+
+    $self->logmsg ("compressing archive\n");
     $self->run_command ("gzip $target");
+
+    my $target_size = int(-s "$target.gz") >> 20;
+    $self->logmsg ("created '$target.gz' with size: $target_size MB\n");
 }
 
 sub enter {
