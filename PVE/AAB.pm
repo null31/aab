@@ -455,6 +455,12 @@ sub cache_packages {
     $self->run_command([@pacman, '-Sw', '--', @$packages]);
 }
 
+sub mask_systemd_unit {
+    my ($self, $unit) = @_;
+    my $root = $self->{rootfs};
+    symln '/dev/null', "$root/etc/systemd/system/$unit";
+}
+
 sub bootstrap {
     my ($self, $include, $exclude) = @_;
     my $root = $self->{rootfs};
@@ -542,6 +548,11 @@ sub bootstrap {
 
     print "Installing packages...\n";
     $self->ve_command(['pacman', '-S', '--needed', '--noconfirm', '--', @$packages]);
+
+    print "Masking problematic systemd units...\n";
+    for  my $unit (qw(sys-kernel-config.mount sys-kernel-debug.mount)) {
+	$self->mask_systemd_unit($unit);
+    }
 }
 
 # devices needed for gnupg to function:
