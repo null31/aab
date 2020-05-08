@@ -11,8 +11,7 @@ use IPC::Open2;
 use IPC::Open3;
 use UUID;
 use Cwd;
-
-my @BASE_PACKAGES = qw(base openssh);
+my @BASE_PACKAGES = qw(base openssh vi nano);
 my @BASE_EXCLUDES = qw(e2fsprogs
                        jfsutils
                        linux
