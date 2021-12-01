@@ -111,7 +111,7 @@ eval {
 
     } elsif ($cmd eq 'finalize') {
 
-	$aab->finalize();
+	$aab->finalize(@ARGV);
 
     } elsif ($cmd eq 'install') {
 

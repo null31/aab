@@ -636,7 +636,19 @@ sub write_config {
 }
 
 sub finalize {
-    my ($self) = @_;
+    my ($self, $compressor) = @_;
+
+    my $use_zstd = 1;
+    if (defined($compressor)) {
+	if ($compressor =~ /^\s*--zstd?\s*$/) {
+	    $use_zstd = 1;
+	} elsif ($compressor =~ /^\s*--(?:gz|gzip)\s*$/) {
+	    $use_zstd = 0; # just boolean for now..
+	} else {
+	    die "unkown compressor '$compressor'!\n";
+	}
+    }
+
     my $rootdir = $self->{rootfs};
 
     print "Stopping container...\n";
@@ -663,18 +675,24 @@ sub finalize {
 
     $self->logmsg ("creating final appliance archive\n");
 
+    my $compressor_ext =  $use_zstd ? 'zst' : 'gz';
+
     my $target = "$self->{targetname}.tar";
     unlink $target;
-    unlink "$target.gz";
+    unlink "$target.$compressor_ext";
 
     $self->run_command ("tar cpf $target --numeric-owner -C '$rootdir' ./etc/appliance.info");
     $self->run_command ("tar rpf $target --numeric-owner -C '$rootdir' --exclude ./etc/appliance.info .");
 
-    $self->logmsg ("compressing archive\n");
-    $self->run_command ("gzip $target");
+    $self->logmsg ("compressing archive ($compressor_ext)\n");
+    if ($use_zstd) {
+	$self->run_command ("zstd -19 --rm $target");
+    } else {
+	$self->run_command ("gzip -9 $target");
+    }
 
-    my $target_size = int(-s "$target.gz") >> 20;
-    $self->logmsg ("created '$target.gz' with size: $target_size MB\n");
+    my $target_size = int(-s "$target.$compressor_ext") >> 20;
+    $self->logmsg ("created '$target.$compressor_ext' with size: $target_size MB\n");
 }
 
 sub enter {
