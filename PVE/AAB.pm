@@ -12,16 +12,18 @@ use IPC::Open3;
 use UUID;
 use Cwd;
 my @BASE_PACKAGES = qw(base openssh vi nano);
-my @BASE_EXCLUDES = qw(e2fsprogs
-                       jfsutils
-                       linux
-                       linux-firmware
-                       lvm2
-                       mdadm
-                       netctl
-                       pcmciautils
-                       reiserfsprogs
-                       xfsprogs);
+my @BASE_EXCLUDES = qw(
+    e2fsprogs
+    jfsutils
+    linux
+    linux-firmware
+    lvm2
+    mdadm
+    netctl
+    pcmciautils
+    reiserfsprogs
+    xfsprogs
+);
 
 my $PKGDIR = "/var/cache/pacman/pkg";
 
