@@ -367,7 +367,7 @@ sub ve_exec {
 }
 
 sub run_command {
-    my ($self, $cmd, $input, $getoutput) = @_;
+    my ($self, $cmd, $input, $getoutput, $noerr) = @_;
 
     my $reader = IO::File->new();
     my $writer = IO::File->new();
@@ -428,9 +428,9 @@ sub run_command {
     waitpid ($pid, 0);
     my $ec = ($? >> 8);
 
-    die "command '$cmdstr' failed with exit code $ec\n" if $ec;
+    die "command '$cmdstr' failed with exit code $ec\n" if $ec && !$noerr;
 
-    return $res;
+    return wantarray ? ($res, $ec) : $res;
 }
 
 sub start_container {
