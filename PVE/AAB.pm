@@ -237,16 +237,19 @@ sub initialize {
 }
 
 sub write_pacman_conf {
-    my ($self) = @_;
+    my ($self, $config_fn, $siglevel) = @_;
 
     my $config = $self->{config};
 
     $config->{source} //= [];
     $config->{mirror} //= [];
 
+    $siglevel ||= "Never";
+    $config_fn ||= $self->{'pacman.conf'};
+
     my $servers = "Server = ".join("\nServer = ", @{$config->{source}}, @{$config->{mirror}}) ."\n";
 
-    my $fh = IO::File->new($self->{'pacman.conf'}, O_WRONLY | O_CREAT | O_EXCL)
+    my $fh = IO::File->new($config_fn, O_WRONLY | O_CREAT | O_EXCL)
         or die "unable to write pacman config file $self->{'pacman.conf'} - $!";
 
     my $arch = $config->{architecture};
@@ -257,7 +260,7 @@ sub write_pacman_conf {
 HoldPkg = pacman glibc
 Architecture = $arch
 CheckSpace
-SigLevel = Never
+SigLevel = $siglevel
 
 [core]
 $servers
@@ -447,13 +450,15 @@ sub stop_container {
 }
 
 sub pacman_command {
-    my ($self) = @_;
+    my ($self, $config_fn) = @_;
     my $root = $self->{rootfs};
-    return ('/usr/bin/pacman',
-            '--root', $root,
-            '--config', $self->{'pacman.conf'},
-            '--cachedir', $self->{pkgcache},
-            '--noconfirm');
+    return (
+        '/usr/bin/pacman',
+        '--root', $root,
+        '--config', $config_fn || $self->{'pacman.conf'},
+        '--cachedir', $self->{pkgcache},
+        '--noconfirm',
+    );
 }
 
 sub cache_packages {
