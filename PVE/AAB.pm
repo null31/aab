@@ -661,7 +661,7 @@ sub finalize {
 	} elsif ($compressor =~ /^\s*--(?:gz|gzip)\s*$/) {
 	    $use_zstd = 0; # just boolean for now..
 	} else {
-	    die "unkown compressor '$compressor'!\n";
+	    die "finalize: unknown compressor '$compressor'!\n";
 	}
     }
 
@@ -691,7 +691,7 @@ sub finalize {
 
     $self->logmsg ("creating final appliance archive\n");
 
-    my $compressor_ext =  $use_zstd ? 'zst' : 'gz';
+    my $compressor_ext = $use_zstd ? 'zst' : 'gz';
 
     my $target = "$self->{targetname}.tar";
     unlink $target;
