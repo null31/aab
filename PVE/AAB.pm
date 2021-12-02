@@ -465,8 +465,11 @@ sub cache_packages {
     my ($self, $packages) = @_;
     my $root = $self->{rootfs};
 
-    my @pacman = $self->pacman_command();
-    $self->run_command([@pacman, '-Sw', '--', @$packages]);
+    $self->write_pacman_conf('pacman.caching.conf', "Optional");
+    my @pacman = $self->pacman_command('pacman.caching.conf');
+    my ($_res, $ec) = $self->run_command([@pacman, '-Sw', '--', @$packages], undef, undef, 1);
+    $self->logmsg("ignore bad exit $ec due to unavailable keyring, the CT will verify that later.\n")
+	if $ec;
 }
 
 sub mask_systemd_unit {
@@ -730,7 +733,7 @@ sub clean {
     my ($self, $all) = @_;
 
     unlink $self->{logfile};
-    unlink $self->{'pacman.conf'};
+    unlink $self->{'pacman.conf'}, 'pacman.caching.conf';
     $self->ve_destroy();
     unlink '.veid';
     unlink $self->{veconffile};
