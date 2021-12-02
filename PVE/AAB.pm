@@ -231,17 +231,27 @@ sub initialize {
 	die "no sources/mirrors specified";
     }
 
+    $self->write_pacman_conf();
+
+    $self->logmsg("configured VE $self->{veid}\n");
+}
+
+sub write_pacman_conf {
+    my ($self) = @_;
+
+    my $config = $self->{config};
+
     $config->{source} //= [];
     $config->{mirror} //= [];
 
-    my $servers = "Server = "
-                . join("\nServer = ", @{$config->{source}}, @{$config->{mirror}})
-                . "\n";
+    my $servers = "Server = ".join("\nServer = ", @{$config->{source}}, @{$config->{mirror}}) ."\n";
 
-    $fh = IO::File->new($self->{'pacman.conf'}, O_WRONLY|O_CREAT|O_EXCL) ||
-	die "unable to write pacman config file $self->{'pacman.conf'} - $!";
+    my $fh = IO::File->new($self->{'pacman.conf'}, O_WRONLY | O_CREAT | O_EXCL)
+        or die "unable to write pacman config file $self->{'pacman.conf'} - $!";
+
     my $arch = $config->{architecture};
     $arch = 'x86_64' if $arch eq 'amd64';
+
     print $fh <<"EOF";
 [options]
 HoldPkg = pacman glibc
@@ -257,11 +267,9 @@ $servers
 $servers
 EOF
 
-    if ($config->{architecture} eq 'x86_64') {
-	print $fh "[multilib]\n$servers\n";
-    }
+    print $fh "[multilib]\n$servers\n" if $config->{architecture} eq 'x86_64';
 
-    $self->logmsg("configured VE $self->{veid}\n");
+    close($fh);
 }
 
 sub ve_status {
