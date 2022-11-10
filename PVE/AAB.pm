@@ -50,6 +50,17 @@ sub write_file {
     $fh->close;
 }
 
+sub read_file {
+    my ($filename) = @_;
+
+    my $fh = IO::File->new ("<$filename") or die "failed to read $filename - $!\n";
+    my $rec = '';
+    while (defined (my $line = <$fh>)) {
+	$rec .= $line;
+    };
+    return $rec;
+}
+
 sub copy_file {
     my ($a, $b) = @_;
     copy($a, $b) or die "failed to copy $a => $b: $!";
@@ -674,6 +685,11 @@ sub finalize {
     my $file = "$rootdir/etc/pacman.d/mirrorlist";
     unlink $file;
     rename_file($file.'.aab_orig', $file);
+
+    # experienced user can change it anytime and others do well to start out with an updatable system..
+    my $mirrors = eval { read_file($file) } // '';
+    $mirrors = "\nServer = https://geo.mirror.pkgbuild.com/\$repo/os/\$arch\n\n" . $mirrors;
+    write_file($mirrors, $file, 0644);
 
     print "Removing weak temporary pacman keyring...\n";
     rmtree("$rootdir/etc/pacman.d/gnupg");
