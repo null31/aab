@@ -51,3 +51,4 @@ clean:
 .PHONY: distclean
 distclean:
 	@$(PERL) ./aab dist-clean
+	rm -rf archlinux*.tar*
