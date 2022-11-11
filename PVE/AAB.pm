@@ -578,7 +578,7 @@ sub bootstrap {
     $self->ve_command(['pacman', '-S', '--needed', '--noconfirm', '--', @$packages]);
 
     print "Masking problematic systemd units...\n";
-    for  my $unit (qw(sys-kernel-config.mount sys-kernel-debug.mount)) {
+    for  my $unit (qw(sys-kernel-config.mount sys-kernel-debug.mount systemd-journald-audit.socket)) {
 	$self->mask_systemd_unit($unit);
     }
 }
