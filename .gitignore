@@ -1,7 +1,6 @@
 rootfs
 config
 logfile
-PVE
 .veid
 pacman.conf
 pkgcache
