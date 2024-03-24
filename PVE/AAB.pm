@@ -180,7 +180,7 @@ sub __sample_config {
 
     return <<"CFG";
 lxc.arch = $arch
-lxc.include = /usr/share/lxc/config/archlinux.common.conf
+lxc.include = /usr/share/lxc/config/common.conf
 lxc.uts.name = localhost
 lxc.rootfs.path = $self->{rootfs}
 lxc.mount.entry = $self->{pkgcache} $self->{pkgdir} none bind 0 0
