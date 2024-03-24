@@ -11,7 +11,7 @@ use IPC::Open2;
 use IPC::Open3;
 use UUID;
 use Cwd;
-my @BASE_PACKAGES = qw(base openssh vi nano);
+my @BASE_PACKAGES = qw(base openssh vi nano python);
 my @BASE_EXCLUDES = qw(
     e2fsprogs
     jfsutils
@@ -690,9 +690,6 @@ sub finalize {
     my $mirrors = eval { read_file($file) } // '';
     $mirrors = "\nServer = https://geo.mirror.pkgbuild.com/\$repo/os/\$arch\n\n" . $mirrors;
     write_file($mirrors, $file, 0644);
-
-    print "Removing weak temporary pacman keyring...\n";
-    rmtree("$rootdir/etc/pacman.d/gnupg");
 
     my $sizestr = $self->run_command("du -sm $rootdir", undef, 1);
     my $size;
