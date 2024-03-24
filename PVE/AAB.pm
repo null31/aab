@@ -489,6 +489,12 @@ sub mask_systemd_unit {
     symln '/dev/null', "$root/etc/systemd/system/$unit";
 }
 
+sub enable_systemd_unit {
+    my ($self, $unit) = @_;
+    my $root = $self->{rootfs};
+    symln "/usr/lib/systemd/system/$unit", "$root/etc/systemd/system/multi-user.target.wants/$unit";
+}
+
 sub bootstrap {
     my ($self, $include, $exclude) = @_;
     my $root = $self->{rootfs};
@@ -578,8 +584,13 @@ sub bootstrap {
     $self->ve_command(['pacman', '-S', '--needed', '--noconfirm', '--', @$packages]);
 
     print "Masking problematic systemd units...\n";
-    for  my $unit (qw(sys-kernel-config.mount sys-kernel-debug.mount systemd-journald-audit.socket)) {
+    for  my $unit (qw(sys-kernel-config.mount sys-kernel-debug.mount systemd-journald-audit.socket systemd-resolved.service)) {
 	$self->mask_systemd_unit($unit);
+    }
+
+    print "Enable systemd services...\n";
+    for my $unit (qw(sshd.service)) {
+        $self->enable_systemd_unit($unit);
     }
 }
 
