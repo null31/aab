@@ -6,3 +6,4 @@ pacman.conf
 pkgcache
 rootfs
 aab.conf
+archlinux_base_*
