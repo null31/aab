@@ -35,7 +35,7 @@ build-current: check-all
 
 .PHONY: check-pacman
 check-pacman:
-	@which pacman >/dev/null || (echo Dependency error:; echo 'Please install the arch-pacman package'; echo; false)
+	@which pacman >/dev/null || (echo Dependency error:; echo 'Please install the pacman-package-manager or arch-pacman package'; echo; false)
 
 .PHONY: check-root
 check-root:
