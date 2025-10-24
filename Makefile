@@ -16,7 +16,7 @@ aab.conf:
 	echo 'Version: $(VERSION)' >> aab.conf
 	echo 'Section: system' >> aab.conf
 	echo 'Maintainer: Proxmox Support Team <support@proxmox.com>' >> aab.conf
-	echo 'Source: https://ftp.acc.umu.se/mirror/archlinux/$repo/os/$arch' >> aab.conf
+	echo 'Source: https://ftp.acc.umu.se/mirror/archlinux/$$repo/os/$$arch' >> aab.conf
 	echo 'Architecture: $(ARCH)' >> aab.conf
 	echo 'Description: ArchLinux base image.' >> aab.conf
 	echo " ArchLinux template with the 'base' group and the 'openssh' package installed." >> aab.conf
