@@ -277,8 +277,6 @@ SigLevel = $siglevel
 $servers
 [extra]
 $servers
-[community]
-$servers
 EOF
 
     print $fh "[multilib]\n$servers\n" if $config->{architecture} eq 'x86_64';
